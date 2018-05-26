@@ -117,6 +117,13 @@ Ext Caps: [u'1-test-lfc2-6c8bfc83-08b0-4ace-9f2f-f18dbeed6f70', u'1-test-test-te
 ~~~
 
 
+From Capsule / File System perspective, the best way to follow can be executing the command below
+~~~
+# watch "du -hs /var/lib/pulp/content"
+~~~
+
+
+
 That's it.
 
 See you all!
