@@ -129,3 +129,14 @@ That's it.
 See you all!
 
 Waldirio
+
+
+---
+
+Changelog
+    - Collect all lifecycle available on the Sat server
+    - Collect the lifecycle list available on the capsule
+    - Collect all repos available on the Satellite Capsule
+    - Processing the information and saying at the end what should be removed
+    - Removing the repo from pulp on Satellite Capsule
+    - Removing orphan objects on Satellite Capsule
