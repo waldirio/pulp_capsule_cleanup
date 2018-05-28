@@ -209,7 +209,37 @@ INFO 2018-05-28 17:53:23,804 Finishing the cleanup process
 ~~~
 
 
-That's it.
+How to install on the Capsule
+
+I'll prepare one package in a few but if you would like to test it ASAP you can
+
+- Create the file /usr/bin/pulp_cleanup with content below
+~~~
+#!/usr/bin/env python
+
+from pulp_capsule_cleanup import main
+main.main()
+~~~
+
+- Create the conf file link
+~~~
+# ln -s /usr/lib/python2.7/site-packages/pulp_capsule_cleanup/pulp_cleanup.py /etc/pulp_cleanup.conf
+~~~
+
+- Copy the content of url below to your local capsule, then just proceed with steps
+~~~
+# cd /tmp/
+# git clone https://github.com/waldirio/pulp_capsule_cleanup.git
+# mv pulp_capsule_cleanup/pulp_capsule_cleanup/ /usr/lib/python2.7/site-packages/
+~~~
+
+After steps above, just type
+~~~
+# pulp_cleanup
+~~~
+
+
+That's it. Enjoy it.
 
 See you all!
 
