@@ -221,6 +221,12 @@ from pulp_capsule_cleanup import main
 main.main()
 ~~~
 
+- Update the permission
+~~~
+# chmod +x /usr/bin/pulp_cleanup
+~~~
+
+
 - Create the conf file link
 ~~~
 # ln -s /usr/lib/python2.7/site-packages/pulp_capsule_cleanup/pulp_cleanup.py /etc/pulp_cleanup.conf
