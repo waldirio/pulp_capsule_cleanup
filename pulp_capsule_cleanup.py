@@ -4,7 +4,7 @@ import re
 import requests
 import urllib3
 import logging
-from const import SAT_SERVER, CAPSULE_NAME, USERNAME, PASSWORD, CONF_FILE, LOG
+from const import SAT_SERVER, CAPSULE_NAME, USERNAME, PASSWORD, CONF_FILE, LOG, COMMIT
 
 
 global lfc_sat_server
@@ -44,6 +44,18 @@ Capsule Cleanup
 
 """
 
+def check_pre():
+    if not SAT_SERVER:
+        print("Define the Satellite Server SAT_SERVER variable - const.py file")
+        exit()
+    
+    if not USERNAME:
+        print("Define the Username USERNAME variable - const.py file")
+        exit()
+
+    if not PASSWORD:
+        print("Define the Password PASSWORD variable - const.py file")
+        exit()
 
 def read_conf():
     global CAP_USERNAME
@@ -114,7 +126,7 @@ def retrieve_all_lifecycles():
 
 def retrieve_repo_list():
     """ Responsible for retrieve the repo list """
-    logging.info("Retrieving repo list via pulp api")
+    logging.info("Retrieving repo list via pulp api from capsule " + CAPSULE_NAME)
     
     global repos_sat_capsule
 
@@ -154,11 +166,17 @@ def delete_repos():
                 if lfc in repo:
                     print("Deleting repo " + repo + " of lifecycle " + lfc)
                     logging.info("Deleting repo " + repo + " of lifecycle " + lfc)
-                    delete_repo_req = requests.delete("https://"+CAPSULE_NAME+"/pulp/api/v2/repositories/"+repo, \
-                        auth=(CAP_USERNAME, CAP_PASSWORD), verify=False)
-                    data_delete_repo_req = delete_repo_req.json()
-                    print("Delete return info: " + str(data_delete_repo_req))
-                    logging.info("Delete return info: " + str(data_delete_repo_req))
+                    if COMMIT == "True":
+                        delete_repo_req = requests.delete("https://"+CAPSULE_NAME+"/pulp/api/v2/repositories/"+repo, \
+                            auth=(CAP_USERNAME, CAP_PASSWORD), verify=False)
+                        data_delete_repo_req = delete_repo_req.json()
+                        print("Delete return info: " + str(data_delete_repo_req))
+                        logging.info("Delete return info: " + str(data_delete_repo_req))
+                    else:
+                        print("Just to report, repo will not be removed at this moment.")
+                        logging.info("## Just to report, repo will not be removed at this moment.")
+
+
 
 
 def delete_orphan_objects():
@@ -167,11 +185,14 @@ def delete_orphan_objects():
         print("Orphans ... Nothing to do")
         logging.info("Orphans ... Nothing to do")
     else:
-        delete_orphan = requests.delete("https://"+CAPSULE_NAME+"/pulp/api/v2/content/orphans/", \
-            auth=(CAP_USERNAME, CAP_PASSWORD), verify=False)
-        data_delete_orphan = delete_orphan.json
-        print("Delete orphan info: " + str(data_delete_orphan))
-        logging.info("Delete orphan info: " + str(data_delete_orphan))
+        if COMMIT == "True":
+            delete_orphan = requests.delete("https://"+CAPSULE_NAME+"/pulp/api/v2/content/orphans/", \
+                auth=(CAP_USERNAME, CAP_PASSWORD), verify=False)
+            data_delete_orphan = delete_orphan.json
+            print("Delete orphan info: " + str(data_delete_orphan))
+            logging.info("Delete orphan info: " + str(data_delete_orphan))
+        else:
+            print("## Just to report, orphan objects will not be removed at this moment.")
 
 
 def main():
@@ -180,7 +201,9 @@ def main():
     logging.basicConfig(format='%(levelname)s %(asctime)s %(message)s', filename=LOG, level=logging.INFO)
 
     logging.info("Starting the cleanup process")
+    logging.info("COMMIT Status: " + COMMIT)
 
+    check_pre()
     read_conf()
     retrieve_capsule_info()
     retrieve_all_lifecycles()
