@@ -4,7 +4,8 @@ import re
 import requests
 import urllib3
 import logging
-from const import SAT_SERVER, CAPSULE_NAME, USERNAME, PASSWORD, CONF_FILE, LOG, COMMIT
+import time
+from pulp_cleanup import SAT_SERVER, CAPSULE_NAME, USERNAME, PASSWORD, CONF_FILE, LOG, COMMIT
 
 
 global lfc_sat_server
@@ -166,7 +167,8 @@ def delete_repos():
                 if lfc in repo:
                     print("Deleting repo " + repo + " of lifecycle " + lfc)
                     logging.info("Deleting repo " + repo + " of lifecycle " + lfc)
-                    if COMMIT == "True":
+                    #if COMMIT == "True":
+                    if COMMIT:
                         delete_repo_req = requests.delete("https://"+CAPSULE_NAME+"/pulp/api/v2/repositories/"+repo, \
                             auth=(CAP_USERNAME, CAP_PASSWORD), verify=False)
                         data_delete_repo_req = delete_repo_req.json()
@@ -185,12 +187,14 @@ def delete_orphan_objects():
         print("Orphans ... Nothing to do")
         logging.info("Orphans ... Nothing to do")
     else:
-        if COMMIT == "True":
+        #if COMMIT == "True":
+        if COMMIT:
             delete_orphan = requests.delete("https://"+CAPSULE_NAME+"/pulp/api/v2/content/orphans/", \
                 auth=(CAP_USERNAME, CAP_PASSWORD), verify=False)
             data_delete_orphan = delete_orphan.json
             print("Delete orphan info: " + str(data_delete_orphan))
             logging.info("Delete orphan info: " + str(data_delete_orphan))
+            time.sleep(2)
         else:
             print("## Just to report, orphan objects will not be removed at this moment.")
 
@@ -201,7 +205,7 @@ def main():
     logging.basicConfig(format='%(levelname)s %(asctime)s %(message)s', filename=LOG, level=logging.INFO)
 
     logging.info("Starting the cleanup process")
-    logging.info("COMMIT Status: " + COMMIT)
+    logging.info("COMMIT Status: " + str(COMMIT))
 
     check_pre()
     read_conf()
