@@ -265,5 +265,3 @@ Changelog
 
     May/28/2017
     - Reading config file to retrieve pulp username and password
-    - 
-~~~    
