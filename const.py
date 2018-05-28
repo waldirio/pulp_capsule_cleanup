@@ -18,8 +18,8 @@ CAPSULE_NAME=socket.gethostname()
 CONF_FILE="/etc/pulp/server.conf"
 
 """ General area """
-#LOG="/var/log/pulp_cleanup.log"
-LOG="/tmp/pulp_cleanup.log"
+LOG="/var/log/pulp_cleanup.log"
+#LOG="/tmp/pulp_cleanup.log"
 
 # Keep this false to keep data on the pulp repos
 COMMIT="False"
