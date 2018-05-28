@@ -1,10 +1,10 @@
 """ App to cleanup Satellite Capsule when removing the lifecycle """
 
 import re
-import requests
-import urllib3
 import logging
 import time
+import requests
+import urllib3
 from pulp_cleanup import SAT_SERVER, CAPSULE_NAME, USERNAME, PASSWORD, CONF_FILE, LOG, COMMIT
 
 
@@ -48,6 +48,8 @@ Capsule Cleanup
 """
 
 def check_pre():
+    """ Check if there are options already configured on the conf file """
+
     if not SAT_SERVER:
         print("Define the Satellite Server SAT_SERVER variable - /etc/pulp_cleanup.conf file")
         exit()
@@ -61,6 +63,8 @@ def check_pre():
         exit()
 
 def read_conf():
+    """ Reading the pulp conf file to retrieve pulp username and password """
+
     global CAP_USERNAME
     global CAP_PASSWORD
 
@@ -220,7 +224,7 @@ def main():
     delete_orphan_objects()
 
     logging.info("Finishing the cleanup process")
-    
+
 
 
 if __name__ == "__main__":
