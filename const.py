@@ -12,3 +12,7 @@ CAPSULE_NAME="sat631caps.local.domain"
 
 """ Pulp area """
 CONF_FILE="/etc/pulp/server.conf"
+
+""" General area """
+#LOG="/var/log/pulp_cleanup.log"
+LOG="/tmp/pulp_cleanup.log"

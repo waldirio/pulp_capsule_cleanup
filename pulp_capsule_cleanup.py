@@ -3,7 +3,8 @@
 import re
 import requests
 import urllib3
-from const import SAT_SERVER, CAPSULE_NAME, USERNAME, PASSWORD, CONF_FILE
+import logging
+from const import SAT_SERVER, CAPSULE_NAME, USERNAME, PASSWORD, CONF_FILE, LOG
 
 
 global lfc_sat_server
@@ -54,19 +55,19 @@ def read_conf():
         if re.findall("^default_login", line_file):
             fields_line = re.split(":", line_file)
             CAP_USERNAME = fields_line[1].strip()
-            print("Pulp Username: " + CAP_USERNAME)
+            logging.info("Pulp Username: " + CAP_USERNAME)
 
         if re.findall("^default_password", line_file):
             fields_line = re.split(":", line_file)
             CAP_PASSWORD = fields_line[1].strip()
-            print("Pulp Password: " + CAP_PASSWORD)
+            logging.info("Pulp Password: " + CAP_PASSWORD)
 
 
 def retrieve_capsule_info():
     """ Responsible for retrieve the capsule info """
 
-    print("Sat Server: " + SAT_SERVER)
-    print("Ext Capsule: " + CAPSULE_NAME)
+    logging.info("Sat Server: " + SAT_SERVER)
+    logging.info("Ext Capsule: " + CAPSULE_NAME)
     urllib3.disable_warnings()
     capsule_content = requests.get(SAT_SERVER+"/katello/api/capsules", \
         auth=(USERNAME, PASSWORD), verify=False)
@@ -74,26 +75,24 @@ def retrieve_capsule_info():
     data_capsule_content = capsule_content.json()
 
     for capsule in data_capsule_content.get('results'):
-        # print (capsule.get('name'))
         if CAPSULE_NAME in capsule.get('name'):
-            print("capsule hostname: " + capsule.get('name'))
-            print("capsule id: " + str(capsule.get('id')))
+            logging.info("capsule hostname: " + capsule.get('name'))
+            logging.info("capsule id: " + str(capsule.get('id')))
             lifecycle_capsule(str(capsule.get('id')))
 
-    print("LFC on capsule " + CAPSULE_NAME + " from Satellite perspective: " + str(lfc_sat_server))
+    logging.info("LFC on capsule " + CAPSULE_NAME + " from Satellite perspective: " + str(lfc_sat_server))
 
 def lifecycle_capsule(ch_id):
     """ Just to check the ID passed """
-    # print("ID Passed: " + ch_id)
     content_sat_view = requests.get(SAT_SERVER+"/katello/api/capsules/" + ch_id + "/content/lifecycle_environments", \
         auth=(USERNAME, PASSWORD), verify=False)
     data_content_sat_view = content_sat_view.json()
 
     for lfc in data_content_sat_view.get('results'):
         """ print the lifecycle name on the capsule from Satellite perspective """
-        # print(lfc.get('name'))
         lfc_sat_server.append(lfc.get('name'))
 
+#    logging.info("Sat repo: " + str(lfc_sat_server))
 
 def retrieve_all_lifecycles():
     """ Responsible for retrieve all life cycles """
@@ -110,21 +109,23 @@ def retrieve_all_lifecycles():
     global lfc_sat_server_full
     lfc_sat_server_full = set(aux)
 
+    logging.info("All LFC: " + str(lfc_sat_server_full))
+
 
 def retrieve_repo_list():
     """ Responsible for retrieve the repo list """
-    print("Retrieving repo list via pulp api")
-    # curl -X GET -su admin:aZCehD5szBULC4z2EZhHFZGg5BJav9je -k https://sat631caps.local.domain/pulp/api/v2/repositories/
+    logging.info("Retrieving repo list via pulp api")
+    
     global repos_sat_capsule
 
     ext_capsule_content = requests.get("https://"+CAPSULE_NAME+"/pulp/api/v2/repositories/", \
         auth=(CAP_USERNAME, CAP_PASSWORD), verify=False)
     data_ext_capsule_content = ext_capsule_content.json()
-    # print(data_ext_capsule_content)
+
     for repo in data_ext_capsule_content:
-        # print(repo.get('id'))
         repos_sat_capsule.append(repo.get('id'))
 
+    logging.info("Ext Caps / Repos *all*: " + str(repos_sat_capsule))
 
 def compare_lists():
     """ Comparing values to figure out what will be removed """
@@ -143,35 +144,42 @@ def compare_lists():
 
     global repos_to_delete
     repos_to_delete = set(stage_list)
-    print("To be removed on the Capsule: " + str(repos_to_delete))
+    logging.info("To be removed on the Capsule: " + str(repos_to_delete))
 
 
 def delete_repos():
-    # print("deleting .....")
     """ This will delete all repos on the list repos_to_delete """
     for lfc in repos_to_delete:
             for repo in repos_sat_capsule:
                 if lfc in repo:
                     print("Deleting repo " + repo + " of lifecycle " + lfc)
+                    logging.info("Deleting repo " + repo + " of lifecycle " + lfc)
                     delete_repo_req = requests.delete("https://"+CAPSULE_NAME+"/pulp/api/v2/repositories/"+repo, \
                         auth=(CAP_USERNAME, CAP_PASSWORD), verify=False)
                     data_delete_repo_req = delete_repo_req.json()
                     print("Delete return info: " + str(data_delete_repo_req))
+                    logging.info("Delete return info: " + str(data_delete_repo_req))
 
 
 def delete_orphan_objects():
     """ removing orphan objects """
     if not repos_to_delete:
         print("Orphans ... Nothing to do")
+        logging.info("Orphans ... Nothing to do")
     else:
         delete_orphan = requests.delete("https://"+CAPSULE_NAME+"/pulp/api/v2/content/orphans/", \
             auth=(CAP_USERNAME, CAP_PASSWORD), verify=False)
         data_delete_orphan = delete_orphan.json
         print("Delete orphan info: " + str(data_delete_orphan))
+        logging.info("Delete orphan info: " + str(data_delete_orphan))
 
 
 def main():
     """ main function """
+
+    logging.basicConfig(format='%(levelname)s %(asctime)s %(message)s', filename=LOG, level=logging.INFO)
+
+    logging.info("Starting the cleanup process")
 
     read_conf()
     retrieve_capsule_info()
@@ -179,12 +187,10 @@ def main():
     retrieve_repo_list()
     compare_lists()
     delete_repos()
-
     delete_orphan_objects()
 
-    print("All lfc: " + str(lfc_sat_server_full))
-    print("Sat repo: " + str(lfc_sat_server))
-    print("Ext Caps: " + str(repos_sat_capsule))
+    logging.info("Finishing the cleanup process")
+    
 
 
 if __name__ == "__main__":
