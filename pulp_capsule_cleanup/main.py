@@ -16,6 +16,8 @@ lfc_diff = []
 repos_sat_capsule = []
 repos_to_delete = []
 
+urllib3.disable_warnings()
+
 """
 Capsule Cleanup
 
@@ -47,15 +49,15 @@ Capsule Cleanup
 
 def check_pre():
     if not SAT_SERVER:
-        print("Define the Satellite Server SAT_SERVER variable - const.py file")
+        print("Define the Satellite Server SAT_SERVER variable - /etc/pulp_cleanup.conf file")
         exit()
     
     if not USERNAME:
-        print("Define the Username USERNAME variable - const.py file")
+        print("Define the Username USERNAME variable - /etc/pulp_cleanup.conf file")
         exit()
 
     if not PASSWORD:
-        print("Define the Password PASSWORD variable - const.py file")
+        print("Define the Password PASSWORD variable - /etc/pulp_cleanup.conf file")
         exit()
 
 def read_conf():
@@ -81,7 +83,6 @@ def retrieve_capsule_info():
 
     logging.info("Sat Server: " + SAT_SERVER)
     logging.info("Ext Capsule: " + CAPSULE_NAME)
-    urllib3.disable_warnings()
     capsule_content = requests.get(SAT_SERVER+"/katello/api/capsules", \
         auth=(USERNAME, PASSWORD), verify=False)
 
@@ -183,18 +184,20 @@ def delete_repos():
 
 def delete_orphan_objects():
     """ removing orphan objects """
+    
+
     if not repos_to_delete:
         print("Orphans ... Nothing to do")
         logging.info("Orphans ... Nothing to do")
     else:
-        #if COMMIT == "True":
         if COMMIT:
+            logging.info("Removing Orphan Objects ...")
+            time.sleep(6)
             delete_orphan = requests.delete("https://"+CAPSULE_NAME+"/pulp/api/v2/content/orphans/", \
                 auth=(CAP_USERNAME, CAP_PASSWORD), verify=False)
             data_delete_orphan = delete_orphan.json
             print("Delete orphan info: " + str(data_delete_orphan))
             logging.info("Delete orphan info: " + str(data_delete_orphan))
-            time.sleep(2)
         else:
             print("## Just to report, orphan objects will not be removed at this moment.")
 
