@@ -15,16 +15,6 @@ USERNAME="admin"
 PASSWORD="redhat"
 ~~~
 
-The Pulp password
-~~~
-CAP_PASSWORD="aZCehD5szBULC4z2EZhHFZGg5BJav9je"
-~~~
-to collect this one from your environment, execute the command below
-~~~
-# grep ^default_password password /etc/pulp/server.conf|cut -d: -f3 | sed -e 's/ //'
-TYHXmXF7Nm2VKogWCpE9Pk82JoVr6geq
-~~~
-
 - Now it's time to execute the script, the same will verify all lifecycles / repos and will remove what should not be anymore on your environment.
 
 Note. All information will be logged on the default output *terminal*, soon I'll implement the log feature.
@@ -141,4 +131,7 @@ Changelog
     - Processing the information and saying at the end what should be removed
     - Removing the repo from pulp on Satellite Capsule
     - Removing orphan objects on Satellite Capsule
+
+    May/28/2017
+    - Reading config file to retrieve pulp username and password
 ~~~    

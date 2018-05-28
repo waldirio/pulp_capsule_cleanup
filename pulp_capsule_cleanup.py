@@ -1,8 +1,9 @@
 """ App to cleanup Satellite Capsule when removing the lifecycle """
 
+import re
 import requests
 import urllib3
-from const import SAT_SERVER, CAPSULE_NAME, USERNAME, PASSWORD, CAP_USERNAME, CAP_PASSWORD
+from const import SAT_SERVER, CAPSULE_NAME, USERNAME, PASSWORD, CONF_FILE
 
 
 global lfc_sat_server
@@ -15,6 +16,10 @@ repos_to_delete = []
 
 """
 Capsule Cleanup
+
+    0. Reading pulp conf file to retrieve the user and password
+        - read_conf()
+
     1. Will retrieve the information related to the Capsule
         - retrieve_capsule_info()
 
@@ -37,6 +42,24 @@ Capsule Cleanup
         - delete_orphan_objects()
 
 """
+
+
+def read_conf():
+    global CAP_USERNAME
+    global CAP_PASSWORD
+
+    f = open(CONF_FILE,"r")
+    
+    for line_file in f:
+        if re.findall("^default_login",line_file):
+            fields_line=re.split(":", line_file)
+            CAP_USERNAME=fields_line[1].strip()
+            print("Pulp Username: " + CAP_USERNAME)
+    
+        if re.findall("^default_password", line_file):
+            fields_line=re.split(":", line_file)
+            CAP_PASSWORD=fields_line[1].strip()
+            print("Pulp Password: " + CAP_PASSWORD)
 
 
 def retrieve_capsule_info():
@@ -150,6 +173,8 @@ def delete_orphan_objects():
 def main():
     """ main function """
 
+    read_conf()
+    pass
     retrieve_capsule_info()
     retrieve_all_lifecycles()
     retrieve_repo_list()
